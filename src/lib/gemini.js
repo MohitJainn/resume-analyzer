@@ -12,6 +12,13 @@ You are an ATS and hiring expert.
 
 Analyze this resume.
 
+
+Important:
+- Do not assume project dates.
+- Only use dates explicitly mentioned.
+- Do not flag future dates unless a project start/end date is explicitly after today's date.
+- If dates are unclear, say "date information unavailable".
+
 Return ONLY valid JSON with no markdown, no backticks, no explanation:
 
 {
