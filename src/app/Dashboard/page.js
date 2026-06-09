@@ -3,6 +3,8 @@ import AnalysisResult from "../componenets/AnalysisResult";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import jsPDF from "jspdf";
+
 
 export default function Dashboard() {
   const { status } = useSession();
@@ -50,7 +52,53 @@ export default function Dashboard() {
     const dropped = e.dataTransfer.files[0];
     if (dropped?.type === "application/pdf") setFile(dropped);
   }
+ 
 
+function downloadPDF() {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 20;
+  const maxWidth = pageWidth - margin * 2;
+  let y = 20;
+
+  function addLine(text, size = 11, bold = false) {
+    doc.setFontSize(size);
+    doc.setFont("helvetica", bold ? "bold" : "normal");
+    const lines = doc.splitTextToSize(text, maxWidth);
+    lines.forEach((line) => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      doc.text(line, margin, y);
+      y += size * 0.5;
+    });
+    y += 2;
+  }
+
+  function addSection(title, items) {
+    y += 4;
+    addLine(title, 12, true);
+    items.forEach((item, i) => {
+      const clean = item.replace(/\*\*(.*?)\*\*/g, "$1");
+      addLine(`${i + 1}. ${clean}`, 10);
+    });
+  }
+
+  // Title
+  addLine("Resume Analysis Report", 18, true);
+  y += 4;
+
+  // Score
+  addLine(`ATS Score: ${analysis.atsScore} / 100`, 13, true);
+  y += 4;
+
+  addSection("Strengths", analysis.strengths);
+  addSection("Weaknesses", analysis.weaknesses);
+  addSection("Missing Skills", analysis.missingSkills);
+  addSection("Improvements", analysis.improvements);
+
+  doc.save("resume-analysis.pdf");
+}
+
+      
   return (
     <div style={styles.page}>
       <style>{css}</style>
@@ -122,8 +170,18 @@ export default function Dashboard() {
             )}
           </button>
         </form>
-
-        {analysis && <AnalysisResult analysis={analysis} />}
+        {analysis && (
+  <>
+    <AnalysisResult analysis={analysis} />
+    <button
+      onClick={downloadPDF}
+      style={styles.button}
+      className="analyzeBtn"
+    >
+      Download Report →
+    </button>
+  </>
+)}
       </main>
     </div>
   );
