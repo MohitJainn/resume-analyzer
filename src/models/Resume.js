@@ -10,6 +10,11 @@ const ResumeSchema = new mongoose.Schema({
   analysis: {
     type: mongoose.Schema.Types.Mixed,
   },
+  resumeHash: {
+  type: String,
+  unique: true,
+  required: true,
+},
   createdAt: {
     type: Date,
     default: Date.now,
